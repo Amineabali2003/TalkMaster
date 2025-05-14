@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [develop, main]
+    branches: [main, develop]
   pull_request:
-    branches: [develop, main]
+    branches: [main, develop]
 
 jobs:
   lint-and-test:
@@ -14,19 +14,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Lint backend
+        working-directory: apps/backend
+        run: pnpm run lint
 
-      - name: Run Prettier Check
-        run: npm run format:check
+      - name: Lint frontend
+        working-directory: apps/frontend
+        run: pnpm run lint
 
-      - name: Run tests
-        run: npm test
+      - name: Format check backend
+        working-directory: apps/backend
+        run: pnpm run format:check
+
+      - name: Format check frontend
+        working-directory: apps/frontend
+        run: pnpm run format:check
+
+      - name: Run backend tests
+        working-directory: apps/backend
+        run: pnpm test
