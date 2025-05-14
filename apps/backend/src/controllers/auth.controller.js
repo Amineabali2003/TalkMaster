@@ -51,3 +51,12 @@ exports.logout = (req, res) => {
   });
   res.json({ message: "Déconnexion réussie" });
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await authService.getCurrentUser(req.user.id);
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
