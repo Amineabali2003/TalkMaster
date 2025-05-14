@@ -3,7 +3,13 @@ const authService = require("../services/auth.service");
 exports.login = async (req, res) => {
   try {
     const token = await authService.loginUser(req.body.email, req.body.password);
-    res.json({ token });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000
+    });
+    res.json({ message: "Connexion réussie" });
   } catch (err) {
     res.status(401).json({ error: err.message });
   }
@@ -11,7 +17,8 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const user = await authService.registerUser(req.body.email, req.body.password);
+    const { password, email } = req.body;
+    const user = await authService.registerUser(email, password);
     res.status(201).json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -34,4 +41,13 @@ exports.resetPassword = async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax"
+  });
+  res.json({ message: "Déconnexion réussie" });
 };
