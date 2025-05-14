@@ -1,21 +1,29 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useRouter } from "next/router"
-import Link from "next/link"
-import React from "react"
+import React, { useState } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { login } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 export function LoginForm({ className, ...props }) {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    // Ici tu peux vérifier les identifiants
-
-    // Redirection après succès du login
-    router.push("/");
+    try {
+      const token = await login(email, password);
+      localStorage.setItem("token", token);
+      router.push("/"); // redirection après login
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -26,10 +34,20 @@ export function LoginForm({ className, ...props }) {
           Enter your email below to login to your account
         </p>
       </div>
+
+      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input
+            id="email"
+            type="email"
+            placeholder="m@example.com"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
@@ -38,12 +56,19 @@ export function LoginForm({ className, ...props }) {
               Forgot your password?
             </Link>
           </div>
-          <Input id="password" type="password" required />
+          <Input
+            id="password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
         <Button type="submit" className="w-full">
           Login
         </Button>
       </div>
+
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
         <Link href="/register" className="underline underline-offset-4">

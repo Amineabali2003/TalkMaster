@@ -1,43 +1,90 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { register } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
-export default function RegisterForm() {
+export default function RegisterForm({ className, ...props }) {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      await register(email, password);
+      router.push("/login");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
-    <Card className="mx-auto max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-3xl">Register</CardTitle>
-        <CardDescription>Enter your information to create an account</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="full-name">Full name</Label>
-          <Input id="full-name" placeholder="John Doe" required />
-        </div>
-        <div className="space-y-2">
+    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-2xl font-bold">Create an account</h1>
+        <p className="text-muted-foreground text-sm text-balance">
+          Enter your email below to create your account
+        </p>
+      </div>
+
+      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+
+      <div className="grid gap-6">
+        <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="me@example.com" required />
+          <Input
+            id="email"
+            type="email"
+            placeholder="m@example.com"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
-        <div className="space-y-2">
+        <div className="grid gap-3">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" required />
+          <Input
+            id="password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirm-password">Confirm Password</Label>
-          <Input id="confirm-password" type="password" required />
+        <div className="grid gap-3">
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
         </div>
-        {/* Nouveau champ Rôle */}
-        {/* <div className="space-y-2">
-          <Label htmlFor="role">Role</Label>
-          <select id="role" name="role" required className="w-full border p-2 rounded">
-            <option value="conférencier">Conférencier</option>
-            <option value="organisateur">Organisateur</option>
-            <option value="public">Public</option>
-          </select>
-        </div> */}
-        <Button className="w-full">Register</Button>
-      </CardContent>
-    </Card>
-  )
+        <Button type="submit" className="w-full">
+          Register
+        </Button>
+      </div>
+
+      <div className="text-center text-sm">
+        Already have an account?{" "}
+        <Link href="/login" className="underline underline-offset-4">
+          Sign in
+        </Link>
+      </div>
+    </form>
+  );
 }
