@@ -8,11 +8,14 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(cuid())
-  email    String   @unique
-  password String
-  role     Role
-  talks    Talk[]   @relation("UserTalks")
+  id               String    @id @default(cuid())
+  email            String    @unique
+  password         String
+  role             Role
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+  talks            Talk[]    @relation("UserTalks")
+  favorites        Favorite[]
 }
 
 model Talk {
@@ -25,8 +28,26 @@ model Talk {
   status      TalkStatus @default(PENDING)
   speaker     User       @relation("UserTalks", fields: [speakerId], references: [id])
   speakerId   String
-  room        String?
   startTime   DateTime?
+  room        Room?      @relation(fields: [roomId], references: [id])
+  roomId      String?
+  day         Int?
+  favoritedBy Favorite[]
+}
+
+model Room {
+  id    String  @id @default(cuid())
+  name  String  @unique
+  talks Talk[]
+}
+
+model Favorite {
+  user     User @relation(fields: [userId], references: [id])
+  userId   String
+  talk     Talk @relation(fields: [talkId], references: [id])
+  talkId   String
+
+  @@id([userId, talkId])
 }
 
 enum Role {
