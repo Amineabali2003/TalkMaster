@@ -1,3 +1,4 @@
+// controllers/talk.controller.js
 const talkService = require("../services/talk.service");
 const icalService = require("../services/ical.service");
 
@@ -57,8 +58,18 @@ exports.toggleFavorite = async (req, res) => {
 };
 
 exports.getICal = async (req, res) => {
-  const file = await icalService.generateICal(req.params.id);
-  res.setHeader("Content-Type", "text/calendar");
-  res.setHeader("Content-Disposition", "attachment; filename=talk.ics");
-  res.send(file);
+  try {
+    const file = await icalService.generateICal(req.params.id);
+    res.setHeader("Content-Type", "text/calendar");
+    res.setHeader("Content-Disposition", "attachment; filename=talk.ics");
+    res.send(file);
+  } catch (err) {
+    console.error("Erreur génération iCal :", err);
+    res.status(500).json({ error: "Erreur génération iCal" });
+  }
+};
+
+exports.getPendingTalks = async (req, res) => {
+  const talks = await talkService.getPendingTalks();
+  res.json(talks);
 };

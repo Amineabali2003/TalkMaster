@@ -17,7 +17,7 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const { password, email } = req.body;
+    const { email, password } = req.body;
     const user = await authService.registerUser(email, password);
     res.status(201).json(user);
   } catch (err) {
