@@ -2,9 +2,11 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.proposeTalk = async (speakerId, data) => {
+  const parsedStartTime = data.startTime ? new Date(Number(data.startTime)) : null;
   return prisma.talk.create({
     data: {
       ...data,
+      startTime: parsedStartTime,
       status: "PENDING",
       speakerId,
     },
@@ -23,7 +25,7 @@ exports.scheduleTalk = async (id, { startTime, roomId }) => {
     where: { id },
     data: {
       status: "SCHEDULED",
-      startTime: new Date(startTime),
+      startTime: new Date(Number(startTime)),
       roomId,
     },
   });
@@ -85,4 +87,12 @@ exports.toggleFavorite = async (userId, talkId) => {
   } else {
     return prisma.favorite.create({ data: { userId, talkId } });
   }
+};
+
+exports.getPendingTalks = async () => {
+  return prisma.talk.findMany({
+    where: { status: "PENDING" },
+    include: { speaker: true },
+    orderBy: { startTime: "asc" },
+  });
 };

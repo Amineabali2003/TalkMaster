@@ -1,55 +1,61 @@
-import { cn } from "@/lib/utils"
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/router"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/router"
 import Link from "next/link"
-import React from "react"
+import { loginUser } from "@/lib/auth"
+import { useAuth } from "@/hooks/useAuth"
 
-export function LoginForm({ className, ...props }) {
-  const router = useRouter();
+export function LoginForm() {
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const { refreshUser } = useAuth()
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Ici tu peux vérifier les identifiants
-
-    // Redirection après succès du login
-    router.push("/");
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      await loginUser(email, password)
+      await refreshUser()
+      router.push("/")
+    } catch (err) {
+      setError("Identifiants incorrects")
+    }
+  }
 
   return (
-    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Login to your account</h1>
-        <p className="text-muted-foreground text-sm text-balance">
-          Enter your email below to login to your account
-        </p>
+        <h1 className="text-2xl font-bold">Connexion</h1>
+        <p className="text-sm text-muted-foreground">Entrez votre email et mot de passe</p>
       </div>
-      <div className="grid gap-6">
-        <div className="grid gap-3">
+      <div className="grid gap-4">
+        <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
-        <div className="grid gap-3">
+        <div className="grid gap-2">
           <div className="flex items-center">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Mot de passe</Label>
             <Link href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
-              Forgot your password?
+              Mot de passe oublié ?
             </Link>
           </div>
-          <Input id="password" type="password" required />
+          <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
-        <Button type="submit" className="w-full">
-          Login
-        </Button>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <Button type="submit" className="w-full">Se connecter</Button>
       </div>
       <div className="text-center text-sm">
-        Don&apos;t have an account?{" "}
+        Pas de compte ?{" "}
         <Link href="/register" className="underline underline-offset-4">
-          Sign up
+          S'inscrire
         </Link>
       </div>
     </form>
-  );
+  )
 }

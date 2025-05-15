@@ -17,7 +17,7 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const { password, email } = req.body;
+    const { email, password } = req.body;
     const user = await authService.registerUser(email, password);
     res.status(201).json(user);
   } catch (err) {
@@ -50,4 +50,13 @@ exports.logout = (req, res) => {
     sameSite: "lax"
   });
   res.json({ message: "Déconnexion réussie" });
+};
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await authService.getCurrentUser(req.user.id);
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 };

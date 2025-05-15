@@ -2,4 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tu peux ajouter tes styles personnalisés ici */
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+
+input, textarea, select, button {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+html, body {
+  @apply bg-white text-black dark:bg-gray-900 dark:text-white;
+}
+
+
+
+/* Correction dark mode pour react-big-calendar */
+.dark .rbc-button-link{
+  color: #2c3e50;
+}
+
+.dark .rbc-header{
+  color: #767676;
+}
+
+.dark .bg-white{
+  background-color: #d3d3d3;
+}
+

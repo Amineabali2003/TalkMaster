@@ -7,12 +7,6 @@ const PAUSE_START = 12;
 const PAUSE_END = 13;
 const DURATIONS = [30, 60, 90];
 
-function toUTC2(date) {
-  const utc = new Date(date);
-  utc.setHours(utc.getHours() + 2);
-  return utc;
-}
-
 function getNextThreeDates() {
   const today = new Date();
   const dates = [];
@@ -37,7 +31,7 @@ function generateSlotsForDay(date, duration) {
     if (hour >= PAUSE_START && hour < PAUSE_END) continue;
     const endTime = new Date(d.getTime() + duration * 60 * 1000);
     if (endTime > end) continue;
-    slots.push(d);
+    slots.push(d.getTime());
   }
 
   return slots;
@@ -52,14 +46,14 @@ exports.getAvailableSlots = async () => {
     for (const room of rooms) {
       for (const duration of DURATIONS) {
         const slots = generateSlotsForDay(date, duration);
-        for (const startTime of slots) {
-          const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+        for (const startTimestamp of slots) {
+          const endTimestamp = startTimestamp + duration * 60000;
 
           const conflict = await prisma.talk.findFirst({
             where: {
               roomId: room.id,
               startTime: {
-                lt: endTime,
+                lt: new Date(endTimestamp),
               },
               status: "SCHEDULED",
             },
@@ -67,8 +61,7 @@ exports.getAvailableSlots = async () => {
 
           if (!conflict) {
             available.push({
-              date: date.toISOString().split("T")[0],
-              startTime,
+              startTime: startTimestamp,
               duration,
               roomId: room.id,
               roomName: room.name,
@@ -92,7 +85,7 @@ exports.reserveSlot = async ({
   roomId,
   startTime,
 }) => {
-  const start = new Date(startTime);
+  const start = new Date(Number(startTime));
   const end = new Date(start.getTime() + duration * 60000);
 
   const conflict = await prisma.talk.findFirst({
@@ -117,59 +110,7 @@ exports.reserveSlot = async ({
       status: "SCHEDULED",
       speakerId,
       roomId,
-      startTime,
+      startTime: start,
     },
-  });
-};
-
-exports.generateSchedule = async () => {
-  const acceptedTalks = await prisma.talk.findMany({
-    where: { status: "ACCEPTED" },
-  });
-
-  const rooms = await prisma.room.findMany();
-  const days = getNextThreeDates();
-
-  for (const talk of acceptedTalks) {
-    let scheduled = false;
-    for (const day of days) {
-      for (const room of rooms) {
-        const slots = generateSlotsForDay(day, talk.duration);
-        for (const slot of slots) {
-          const end = new Date(slot.getTime() + talk.duration * 60000);
-
-          const conflict = await prisma.talk.findFirst({
-            where: {
-              roomId: room.id,
-              startTime: {
-                lt: end,
-              },
-              status: "SCHEDULED",
-            },
-          });
-
-          if (!conflict) {
-            await prisma.talk.update({
-              where: { id: talk.id },
-              data: {
-                startTime: slot,
-                roomId: room.id,
-                status: "SCHEDULED",
-              },
-            });
-            scheduled = true;
-            break;
-          }
-        }
-        if (scheduled) break;
-      }
-      if (scheduled) break;
-    }
-  }
-
-  return prisma.talk.findMany({
-    where: { status: "SCHEDULED" },
-    include: { room: true },
-    orderBy: { startTime: "asc" },
   });
 };
