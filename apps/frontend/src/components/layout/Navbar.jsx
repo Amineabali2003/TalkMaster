@@ -2,6 +2,13 @@ import Link from "next/link"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/theme/mode-toggle"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ChevronDown } from "lucide-react"
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -23,7 +30,17 @@ export default function Navbar() {
             <Link href="/login" className="hover:underline">Se connecter</Link>
           )}
           {user && (
-            <Button variant="outline" onClick={logout}>{user.email} (Déconnexion)</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  {user.email}
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={logout}>Déconnexion</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           <ModeToggle />
         </nav>
