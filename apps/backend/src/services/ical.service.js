@@ -1,5 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
-const ical = require("ical-generator");
+const createIcal = require("ical-generator").default;
 const prisma = new PrismaClient();
 
 exports.generateICal = async (talkId) => {
@@ -7,9 +7,13 @@ exports.generateICal = async (talkId) => {
     where: { id: talkId },
     include: { room: true },
   });
-  if (!talk || !talk.startTime || !talk.room) throw new Error("Talk non planifié");
 
-  const calendar = ical({ name: "TalkMaster" });
+  if (!talk || !talk.startTime || !talk.room) {
+    throw new Error("Talk non planifié");
+  }
+
+  const calendar = createIcal({ name: "TalkMaster" });
+
   calendar.createEvent({
     start: new Date(talk.startTime),
     end: new Date(talk.startTime.getTime() + talk.duration * 60000),
