@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { apiFetch } from "@/lib/api"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -16,7 +17,7 @@ export default function ForgotPasswordPage() {
         method: "POST",
         body: JSON.stringify({ email }),
       })
-      setMessage("Email envoyé.")
+      setMessage("Un email de réinitialisation a été envoyé.")
       setError(null)
     } catch (err) {
       setError(err.message)
@@ -30,8 +31,18 @@ export default function ForgotPasswordPage() {
         <Label htmlFor="email">Email</Label>
         <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
       </div>
-      {message && <p className="text-green-600">{message}</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {message && (
+        <Alert variant="success">
+          <AlertTitle>Succès</AlertTitle>
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+      )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>Erreur</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       <Button type="submit" className="w-full">Envoyer</Button>
     </form>
   )
