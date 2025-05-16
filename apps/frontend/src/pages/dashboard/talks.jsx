@@ -5,6 +5,8 @@ import { getPendingTalks, getAvailableSlots, scheduleTalk } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 export default function DashboardPendingTalks() {
   const [talks, setTalks] = useState([])
@@ -13,6 +15,7 @@ export default function DashboardPendingTalks() {
   const [selectedRoomId, setSelectedRoomId] = useState("")
   const [available, setAvailable] = useState([])
   const [selectedSlot, setSelectedSlot] = useState(null)
+  const [selectedTalk, setSelectedTalk] = useState(null)
 
   useEffect(() => {
     getPendingTalks().then(setTalks)
@@ -20,18 +23,23 @@ export default function DashboardPendingTalks() {
   }, [])
 
   useEffect(() => {
+    const talk = talks.find((t) => t.id === selectedTalkId) || null
+    setSelectedTalk(talk)
     setSelectedRoomId("")
     setSelectedSlot(null)
     setAvailable([])
-  }, [selectedTalkId])
+  }, [selectedTalkId, talks])
 
   useEffect(() => {
-    if (selectedRoomId) {
-      const filtered = slots.filter((s) => s.roomId === selectedRoomId)
+    if (selectedRoomId && selectedTalk) {
+      const filtered = slots.filter((s) =>
+        s.roomId === selectedRoomId &&
+        s.duration === selectedTalk.duration
+      )
       setAvailable(filtered)
       setSelectedSlot(null)
     }
-  }, [selectedRoomId])
+  }, [selectedRoomId, selectedTalk, slots])
 
   const handleSchedule = async () => {
     if (!selectedTalkId || !selectedSlot) return
@@ -43,67 +51,93 @@ export default function DashboardPendingTalks() {
     setSelectedTalkId("")
     setSelectedRoomId("")
     setSelectedSlot(null)
+    setSelectedTalk(null)
     const refreshedTalks = await getPendingTalks()
     setTalks(refreshedTalks)
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-semibold mb-4">Talks en attente</h1>
-      <div className="grid gap-4 max-w-xl">
-        <div>
-          <Label>Choisir un talk</Label>
-          <Select value={selectedTalkId} onValueChange={setSelectedTalkId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Talk" />
-            </SelectTrigger>
-            <SelectContent>
-              {talks.map((talk) => (
-                <SelectItem key={talk.id} value={talk.id}>
-                  {talk.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Choisir une salle</Label>
-          <Select value={selectedRoomId} onValueChange={setSelectedRoomId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Salle" />
-            </SelectTrigger>
-            <SelectContent>
-              {[...new Set(slots.map((s) => s.roomId))].map((roomId) => {
-                const name = slots.find((s) => s.roomId === roomId)?.roomName
-                return (
-                  <SelectItem key={roomId} value={roomId}>
-                    {name}
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-6 text-center">Talks en attente de validation</h1>
+      <Card className="max-w-3xl mx-auto p-6 shadow-md">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-2 pb-10">
+            <Label>Choisir un talk</Label>
+            <Select value={selectedTalkId} onValueChange={setSelectedTalkId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un talk" />
+              </SelectTrigger>
+              <SelectContent>
+                {talks.map((talk) => (
+                  <SelectItem key={talk.id} value={talk.id}>
+                    {talk.title}
                   </SelectItem>
-                )
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Choisir un créneau</Label>
-          <Select value={selectedSlot?.startTime?.toString() || ""} onValueChange={(val) => {
-            const found = available.find((s) => s.startTime.toString() === val)
-            setSelectedSlot(found || null)
-          }}>
-            <SelectTrigger>
-              <SelectValue placeholder="Créneau disponible" />
-            </SelectTrigger>
-            <SelectContent>
-              {available.map((slot) => (
-                <SelectItem key={slot.startTime} value={slot.startTime.toString()}>
-                  {new Date(slot.startTime).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })} ({slot.duration}min)
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button onClick={handleSchedule}>Valider</Button>
-      </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2 pb-10">
+            <Label>Choisir une salle</Label>
+            <Select value={selectedRoomId} onValueChange={setSelectedRoomId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner une salle" />
+              </SelectTrigger>
+              <SelectContent>
+                {[...new Set(slots.map((s) => s.roomId))].map((roomId) => {
+                  const name = slots.find((s) => s.roomId === roomId)?.roomName
+                  return (
+                    <SelectItem key={roomId} value={roomId}>
+                      {name}
+                    </SelectItem>
+                  )
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedTalk?.startTime && (
+            <div className="md:col-span-2 flex flex-col gap-2">
+              <Label>Date souhaitée par le conférencier</Label>
+              <Input
+                type="text"
+                disabled
+                value={new Date(selectedTalk.startTime).toLocaleString("fr-FR", {
+                  timeZone: "Europe/Paris",
+                })}
+              />
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2 md:col-span-2 pb-20">
+            <Label>Choisir un créneau</Label>
+            <Select
+              value={selectedSlot?.startTime?.toString() || ""}
+              onValueChange={(val) => {
+                const found = available.find((s) => s.startTime.toString() === val)
+                setSelectedSlot(found || null)
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Créneau disponible" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                {available.map((slot) => (
+                  <SelectItem key={slot.startTime} value={slot.startTime.toString()}>
+                    {new Date(slot.startTime).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })} ({slot.duration} min)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="md:col-span-2">
+            <Button className="w-full mt-2" onClick={handleSchedule}>
+              Valider la planification
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
