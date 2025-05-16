@@ -21,7 +21,10 @@ export default function Navbar() {
           <Link href="/" className="hover:underline">Accueil</Link>
           <Link href="/talks" className="hover:underline">Talks</Link>
           {user?.role === "SPEAKER" && (
-            <Link href="/talk" className="hover:underline">Proposer</Link>
+            <>
+              <Link href="/talk" className="hover:underline">Proposer</Link>
+              <Link href="/favoris" className="hover:underline">Mes Favoris</Link>
+            </>
           )}
           {user?.role === "ORGANIZER" && (
             <Link href="/dashboard/talks" className="hover:underline">Dashboard</Link>

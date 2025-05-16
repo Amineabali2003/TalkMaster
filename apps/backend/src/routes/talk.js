@@ -11,6 +11,7 @@ router.patch("/:id", authenticate("SPEAKER"), talkController.updateTalk);
 router.delete("/:id", authenticate("SPEAKER"), talkController.deleteTalk);
 router.post("/:id/favorite", authenticate(), talkController.toggleFavorite);
 router.get("/mine", authenticate(), talkController.getMyTalks);
+router.get("/favorites", authenticate(), talkController.getFavoriteTalks);
 router.get("/pending", authenticate("ORGANIZER"), talkController.getPendingTalks);
 router.get("/filter", talkController.filterTalks);
 router.get("/public", talkController.getPublicSchedule);

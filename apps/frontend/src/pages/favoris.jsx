@@ -3,18 +3,21 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { useAuth } from "@/hooks/useAuth"
-import { getMyTalks, downloadIcal, toggleFavorite } from "@/lib/api"
+import { getFavoriteTalks, downloadIcal, toggleFavorite } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Heart } from "lucide-react"
 
-export default function SpeakerTalksPage() {
+export default function FavorisPage() {
   const { user } = useAuth()
   const router = useRouter()
   const [talks, setTalks] = useState([])
 
   useEffect(() => {
     if (user) {
-      getMyTalks()
+      getFavoriteTalks()
+        .then((data) =>
+          data.map((talk) => ({ ...talk, isFavorite: true }))
+        )
         .then(setTalks)
         .catch(() => setTalks([]))
     }
@@ -22,8 +25,9 @@ export default function SpeakerTalksPage() {
 
   const handleToggleFavorite = async (id) => {
     await toggleFavorite(id)
-    const updated = await getMyTalks()
-    setTalks(updated)
+    const updated = await getFavoriteTalks()
+    const withFlag = updated.map((talk) => ({ ...talk, isFavorite: true }))
+    setTalks(withFlag)
   }
 
   if (!user) {
@@ -37,9 +41,9 @@ export default function SpeakerTalksPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6 text-center">Mes Talks</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">Mes Favoris</h1>
       {talks.length === 0 ? (
-        <p className="text-center text-muted-foreground">Aucun talk pour le moment.</p>
+        <p className="text-center text-muted-foreground">Aucun favori pour le moment.</p>
       ) : (
         <div className="grid gap-4">
           {talks.map((talk) => (

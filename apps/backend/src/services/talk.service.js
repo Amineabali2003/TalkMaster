@@ -45,11 +45,20 @@ exports.deleteTalk = async (id, speakerId) => {
 };
 
 exports.getTalksBySpeaker = async (speakerId) => {
-  return prisma.talk.findMany({
+  const talks = await prisma.talk.findMany({
     where: { speakerId },
+    include: {
+      room: true,
+      favoritedBy: true,
+    },
     orderBy: { startTime: "asc" },
-  });
-};
+  })
+
+  return talks.map(talk => ({
+    ...talk,
+    isFavorite: talk.favoritedBy.length > 0,
+  }))
+}
 
 exports.getAllTalks = async () => {
   return prisma.talk.findMany({
@@ -96,3 +105,21 @@ exports.getPendingTalks = async () => {
     orderBy: { startTime: "asc" },
   });
 };
+
+exports.getFavoriteTalks = async (userId) => {
+  return prisma.talk.findMany({
+    where: {
+      favoritedBy: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+    include: {
+      room: true,
+    },
+    orderBy: {
+      startTime: "asc",
+    },
+  })
+}
