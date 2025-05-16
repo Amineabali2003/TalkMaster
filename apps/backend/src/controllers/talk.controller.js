@@ -1,4 +1,3 @@
-// controllers/talk.controller.js
 const talkService = require("../services/talk.service");
 const icalService = require("../services/ical.service");
 
@@ -55,6 +54,11 @@ exports.filterTalks = async (req, res) => {
 exports.toggleFavorite = async (req, res) => {
   const result = await talkService.toggleFavorite(req.user.id, req.params.id);
   res.json(result);
+};
+
+exports.getFavoriteTalks = async (req, res) => {
+  const talks = await talkService.getFavoriteTalks(req.user.id);
+  res.json(talks);
 };
 
 exports.getICal = async (req, res) => {

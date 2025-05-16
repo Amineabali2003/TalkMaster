@@ -71,3 +71,12 @@ export async function scheduleTalk(talkId, { startTime, roomId }) {
   })
   return res.data
 }
+
+export async function toggleFavorite(talkId) {
+  await api.post(`/talks/${talkId}/favorite`)
+}
+
+export async function getFavoriteTalks() {
+  const res = await api.get("/talks/favorites")
+  return res.data
+}
