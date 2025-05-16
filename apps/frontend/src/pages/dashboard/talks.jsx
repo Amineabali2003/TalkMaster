@@ -16,6 +16,7 @@ export default function DashboardPendingTalks() {
   const [available, setAvailable] = useState([])
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedTalk, setSelectedTalk] = useState(null)
+  const [successMessage, setSuccessMessage] = useState("")
 
   useEffect(() => {
     getPendingTalks().then(setTalks)
@@ -47,11 +48,12 @@ export default function DashboardPendingTalks() {
       startTime: selectedSlot.startTime,
       roomId: selectedSlot.roomId,
     })
-    alert("Talk planifié avec succès")
     setSelectedTalkId("")
     setSelectedRoomId("")
     setSelectedSlot(null)
     setSelectedTalk(null)
+    setSuccessMessage("Talk planifié avec succès")
+    setTimeout(() => setSuccessMessage(""), 3000)
     const refreshedTalks = await getPendingTalks()
     setTalks(refreshedTalks)
   }
@@ -135,6 +137,9 @@ export default function DashboardPendingTalks() {
             <Button className="w-full mt-2" onClick={handleSchedule}>
               Valider la planification
             </Button>
+            {successMessage && (
+              <p className="text-green-600 mt-4 text-center">{successMessage}</p>
+            )}
           </div>
         </CardContent>
       </Card>
