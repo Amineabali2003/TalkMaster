@@ -5,6 +5,7 @@ import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar"
 import moment from "moment"
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import { apiFetch } from "@/lib/api"
+import { RefreshCw } from "lucide-react"
 
 const localizer = momentLocalizer(moment)
 
@@ -15,11 +16,12 @@ export default function Calendar() {
   const [selectedSubject, setSelectedSubject] = useState("")
   const [selectedDate, setSelectedDate] = useState("")
 
+  const fetchTalks = async () => {
+    const data = await apiFetch("/talks/public")
+    setAllTalks(data)
+  }
+
   useEffect(() => {
-    const fetchTalks = async () => {
-      const data = await apiFetch("/talks/public")
-      setAllTalks(data)
-    }
     fetchTalks()
   }, [])
 
@@ -111,6 +113,9 @@ export default function Calendar() {
         </div>
         <button onClick={resetFilters} className="ml-auto bg-gray-200 px-3 py-1 rounded">
           Réinitialiser les filtres
+        </button>
+        <button onClick={fetchTalks} className="bg-blue-500 text-white p-2 rounded flex items-center justify-center">
+          <RefreshCw size={18} />
         </button>
       </div>
 
