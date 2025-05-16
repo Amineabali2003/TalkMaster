@@ -21,27 +21,31 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Install backend deps (npm)
+        working-directory: apps/backend
+        run: npm install
+
+      - name: Install frontend deps (npm)
+        working-directory: apps/frontend
+        run: npm install --legacy-peer-deps
 
       - name: Lint backend
         working-directory: apps/backend
-        run: pnpm run lint
+        run: npm run lint
 
       - name: Lint frontend
         working-directory: apps/frontend
-        run: pnpm run lint
+        run: npm run lint
 
       - name: Format check backend
         working-directory: apps/backend
-        run: pnpm run format:check
+        run: npm run format:check
 
       - name: Format check frontend
         working-directory: apps/frontend
-        run: pnpm run format:check
+        run: npm run format:check
 
       - name: Run backend tests
         working-directory: apps/backend
-        run: pnpm test
+        run: npm run test
