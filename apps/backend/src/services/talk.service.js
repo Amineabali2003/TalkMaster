@@ -52,13 +52,13 @@ exports.getTalksBySpeaker = async (speakerId) => {
       favoritedBy: true,
     },
     orderBy: { startTime: "asc" },
-  })
+  });
 
   return talks.map(talk => ({
     ...talk,
     isFavorite: talk.favoritedBy.length > 0,
-  }))
-}
+  }));
+};
 
 exports.getAllTalks = async () => {
   return prisma.talk.findMany({
@@ -74,15 +74,33 @@ exports.getPublicSchedule = async () => {
   });
 };
 
-exports.filterTalks = async ({ subject, roomId, level }) => {
+exports.filterTalks = async ({ subject, roomId, level, day }) => {
+  let dateFilter = {};
+  if (day) {
+    const start = new Date(day);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+    dateFilter = {
+      startTime: {
+        gte: start,
+        lte: end,
+      },
+    };
+  }
+
   return prisma.talk.findMany({
     where: {
       status: "SCHEDULED",
       subject: subject || undefined,
       roomId: roomId || undefined,
       level: level || undefined,
+      ...dateFilter,
     },
-    include: { room: true },
+    include: {
+      room: true,
+      speaker: { select: { email: true } },
+    },
     orderBy: { startTime: "asc" },
   });
 };
@@ -121,5 +139,5 @@ exports.getFavoriteTalks = async (userId) => {
     orderBy: {
       startTime: "asc",
     },
-  })
-}
+  });
+};

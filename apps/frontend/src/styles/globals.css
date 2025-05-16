@@ -29,3 +29,7 @@ html, body {
   background-color: #d3d3d3;
 }
 
+.dark .bg-gray-200{
+  background-color: azure;
+  color: #767676;
+}

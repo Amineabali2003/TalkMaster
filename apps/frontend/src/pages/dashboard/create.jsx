@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SlotPicker from "@/components/talk/SlotPicker"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function ScheduleCreatePage() {
   const [talks, setTalks] = useState([])
@@ -29,26 +30,32 @@ export default function ScheduleCreatePage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-semibold mb-4">Planification Manuelle</h1>
-      <div className="grid gap-6 max-w-xl">
-        <div>
-          <Label>Talk à planifier</Label>
-          <Select onValueChange={setSelectedTalk}>
-            <SelectTrigger>
-              <SelectValue placeholder="Choisir un talk" />
-            </SelectTrigger>
-            <SelectContent>
-              {talks.map((talk) => (
-                <SelectItem key={talk.id} value={talk.id}>
-                  {talk.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <SlotPicker onSelect={setSelectedSlot} />
-        <Button onClick={handleSchedule}>Planifier</Button>
-      </div>
+      <h1 className="text-3xl font-bold mb-6 text-center">Planification Manuelle</h1>
+      <Card className="max-w-xl mx-auto p-4 space-y-6">
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="mb-1 block">Talk à planifier</Label>
+            <Select onValueChange={setSelectedTalk}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choisir un talk" />
+              </SelectTrigger>
+              <SelectContent>
+                {talks.map((talk) => (
+                  <SelectItem key={talk.id} value={talk.id}>
+                    {talk.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <SlotPicker onSelect={setSelectedSlot} />
+
+          <Button className="w-full mt-4" onClick={handleSchedule}>
+            Planifier le Talk
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
